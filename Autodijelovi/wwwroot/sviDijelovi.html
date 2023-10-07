@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        .spoljni {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            background-color: lightblue;
+        }
+        .spoljni > .unutrasnji {
+            background-color: lightcyan;
+            width: 20%;
+            margin: 10px;
+            padding: 10px;
+        }
+    </style>
+    <script>
+        var niz;
+        var stavka=0;
+        prikaz = () => {
+            fetch('api/Dijelovi/sviDijelovi')
+            .then(
+                    (odgovor) => {
+                        if (odgovor.status == 200) {
+                            odgovor.json().then((niz) => {
+                                console.log(niz)
+                                popuniPodatke(niz);
+                            }
+                            );
+                        } else {
+                            console.log(odgovor.status);
+                        }
+                    }
+            )
+                .catch((greska) => {
+                    console.log(greska);
+                }
+                )
+        }
+        popuniPodatke = (Dijelovi) => {
+            for (parentObj of Dijelovi) {
+                //dodavanje reda u tabelu
+                let red = document.createElement("tr");
+                red.setAttribute("ID", "red" + parentObj.idDijela)
+                document.getElementById("podaciTabela").appendChild(red);
+
+                //dodavanje celije sa ID
+                let ID_Dijela = document.createElement("td");
+                red.appendChild(ID_Dijela);
+                ID_Dijela.innerHTML = parentObj.idDijela;
+                //dodavanje celije
+                let Sifra = document.createElement("td");
+                red.appendChild(Sifra);
+                Sifra.innerHTML = parentObj.sifra;
+                //dodavanje celije
+                let Naziv = document.createElement("td");
+                red.appendChild(Naziv);
+                Naziv.innerHTML = parentObj.naziv;
+                //dodavanje celije
+                let Proizvodac = document.createElement("td");
+                red.appendChild(Proizvodac);
+                Proizvodac.innerHTML = parentObj.proizvodac;
+                //dodavanje celije
+                let Cijena = document.createElement("td");
+                red.appendChild(Cijena);
+                Cijena.innerHTML = parentObj.cijena;
+            }
+        }
+        pri = () => {
+            fetch('api/Dijelovi/sviDijelovi')
+                .then(
+                    (odgovor) => {
+                        if (odgovor.status == 200) {
+                            odgovor.json().then((niz) => {
+                                console.log(niz)
+                                popuni(niz);
+                            }
+                            );
+                        } else {
+                            console.log(odgovor.status);
+                        }
+                    }
+                )
+                .catch((greska) => {
+                    console.log(greska);
+                }
+                )
+        }
+        popuni = (Dijelovi) => {
+                    for (parentObj of Dijelovi) {
+                        //Dodavanje unutrasnjeg diva
+                        let unutrasnjiDiv = document.createElement("div");
+                        unutrasnjiDiv.setAttribute("class", "unutrasnji");
+                        document.getElementById("spoljasni").appendChild(unutrasnjiDiv);
+
+                        //dodavanje ostalih elemenata
+                        let ID_Dijela = document.createElement("h4");
+                        unutrasnjiDiv.appendChild(ID_Dijela);
+                        ID_Dijela.innerHTML = "ID dijela:" + parentObj.idDijela;
+
+                        let Sifra = document.createElement("h4");
+                        unutrasnjiDiv.appendChild(Sifra);
+                        Sifra.innerHTML = "Šifra dijela:" + parentObj.sifra;
+
+                        let Naziv = document.createElement("h4");
+                        unutrasnjiDiv.appendChild(Naziv);
+                        Naziv.innerHTML = "Naziv dijela:" + parentObj.naziv;
+
+                        let Proizvodac = document.createElement("h4");
+                        unutrasnjiDiv.appendChild(Proizvodac);
+                        Proizvodac.innerHTML = "Proizvođač:" + parentObj.proizvodac;
+
+                        let Cijena = document.createElement("h4");
+                        unutrasnjiDiv.appendChild(Cijena);
+                        Cijena.innerHTML = "Cijena: " + parentObj.cijena + " KM";
+                        stavka++;
+                        if (stavka > 6) {
+                            stavka = 0;
+                            document.createElement("br");
+                        }
+                    }
+        }
+    </script>
+</head>
+<body>
+    <h1>Prikaz svih dijelova</h1>
+    <button onclick="prikaz()">Prikazi</button>
+    <table style="width:80%;table-layout:fixed" border="1px">
+        <thead>
+            <tr>
+                <th>ID Dijela</th>
+                <th>Sifra</th>
+                <th>Naziv</th>
+                <th>Proizvodjac</th>
+                <th>Cijena</th>
+            </tr>
+        </thead>
+        <tbody id="podaciTabela">
+        </tbody>
+    </table>
+    <br />
+
+    <button onclick="pri()">Prikaz kroz div</button>
+    <div class="spoljni" id="spoljasni"></div>
+</body>
+</html>

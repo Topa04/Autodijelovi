@@ -1,0 +1,252 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        tr {
+            transition: 1s;
+        }
+
+        .lijevi, .desni {
+            display: inline-block;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            float: left;
+            height: 100%;
+            width: 50%;
+            margin: 10px;
+            padding: 20px;
+            margin: 0px;
+            border: 0px;
+        }
+
+        .desni {
+            left: 50%;
+        }
+    </style>
+
+    <script>
+		var niz;
+		var brojac = 0;
+
+        ucitaj = () => {
+
+            fetch('api/Dijelovi/prikaz',
+                {
+                    //parametri
+                }
+                )
+                .then(
+                    (podaci) => {
+                        if (podaci.status == 200) {
+                            podaci.json().then((niz) => {
+								console.log(niz)
+								popuniPodatke(niz);
+                            }
+                                );
+                        }
+                        else {
+                            console.log(podaci.status);
+						}
+
+					}
+                )
+				.catch(
+					(greska) => {
+                    console.log(greska);
+					}
+			)
+            
+         }
+
+		popuniPodatke = (podaci) => {
+
+			for (parentObj of podaci) {
+				//dodavanje reda u tabelu
+				let red = document.createElement("tr");
+				red.setAttribute("ID", "red" + brojac++);
+				document.getElementById("podaciTabela").appendChild(red);
+
+				//dodavanje celije sa nazivom dijela
+				let nazivD = document.createElement("td");
+                red.appendChild(nazivD);
+                nazivD.innerHTML = parentObj.naziv_Dijela;
+				//dodavanje celije
+				let nazivM = document.createElement("td");
+                red.appendChild(nazivM);
+                nazivM.innerHTML = parentObj.naziv_Modela;
+				//dodavanje celije
+				let cijena = document.createElement("td");
+                red.appendChild(cijena);
+                cijena.innerHTML = parentObj.cijena;
+				//dodavanje celije
+				let radnja = document.createElement("td");
+                red.appendChild(radnja);
+                radnja.innerHTML = parentObj.radnja;
+
+                let grad = document.createElement("td");
+                red.appendChild(grad);
+                grad.innerHTML = parentObj.grad;
+				//dodavanje dugmadi
+				let akcije = document.createElement("td");
+				red.appendChild(akcije);
+				let updateButton = document.createElement("button");
+				updateButton.setAttribute("onclick", "azuriraj(" + parentObj.osobaId + ")");
+				updateButton.innerHTML = "Azuriraj";
+				akcije.appendChild(updateButton);
+				let obrisiButton = document.createElement("button");
+				obrisiButton.setAttribute("onclick", "obrisi(" + parentObj.osobaId + ")");
+				obrisiButton.innerHTML = "Obrisi";
+				akcije.appendChild(obrisiButton);
+			}
+		}
+
+		obrisi = (id) => {
+
+			let adresa = "api/Osobe/obrisiPodatak/";
+			adresa += id;
+			fetch(adresa,
+				{
+					method: 'DELETE'
+				})
+				.then(
+					(response) => {
+						if (response.status !== 200) {
+							console.log('Geska: ' +
+								response.status);
+							return;
+						}
+						response.text().then((data) => {
+							console.log(data);
+							let element = document.getElementById("red" + id);
+							element.style.opacity = "0";
+							setTimeout(() => {
+								element.remove();
+							}, 1000);
+						});
+					}
+				)
+				.catch((err) => {
+					console.log('Fetch Greska :-S', err);
+				});
+
+		}
+
+		azuriraj = (id) => {
+
+			let adresa = "api/Osobe/pronadjiPodatak/";
+			adresa += id;
+			fetch(adresa,
+				{
+
+				})
+				.then(
+					(response) => {
+						if (response.status !== 200) {
+							console.log('Geska: ' +
+								response.status);
+							return;
+						}
+						response.json().then((data) => {
+							console.log(data);
+							with (document) {
+								getElementById("OsobaID").value = data.osobaId;
+								getElementById("ime").value = data.ime;
+								getElementById("prezime").value = data.prezime;
+								getElementById("adresa").value = data.adresa;
+								getElementById("PoslodavacId").value = data.poslodavacId;
+								getElementById("GradId").value = data.gradId;
+
+							}
+						});
+					}
+				)
+				.catch((err) => {
+					console.log('Fetch Greska :-S', err);
+				});
+
+		}
+
+        dodajDio = () => {
+			let podatak = new Object();
+            podatak.IdDijela = 0;
+            podatak.Sifra = parseInt(document.getElementById("sifraD").value);
+            podatak.Naziv = document.getElementById("nazivD").value;
+            podatak.Proizvodac = document.getElementById("proizvodac").value;
+            podatak.Cijena = document.getElementById("cijena").value + " KM";
+			unosDijela(podatak);
+
+		}
+        unosDijela = (podaci) => {
+            let adresa = 'api/Dijelovi/unosPodataka';
+            var strJson = JSON.stringify(podaci);
+            fetch(adresa, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: strJson
+            })
+                .then(
+                    (response) => {
+                        if (response.status < 200 || response.status > 300) {
+                            console.log('Geska: ' +
+                                response.status);
+                            return;
+                        }
+                        response.json().then((data) => {
+                            console.log(data);
+                        });
+                    }
+                )
+                .catch((err) => {
+                    console.log('Fetch Greska :-S', err);
+                });
+		}
+
+		
+
+    </script>
+</head>
+<body onload="ucitaj()">
+    <div class="lijevi">
+        <table style="width:80%;table-layout:fixed" border="1px">
+            <thead>
+				<tr>
+					<th>Naziv dijela</th>
+					<th>Naziv modela</th>
+					<th>Cijena</th>
+					<th>Radnja</th>
+					<th>Grad</th>
+					<th>Akcije</th>
+				</tr>
+            </thead>
+            <tbody id="podaciTabela">
+            </tbody>
+        </table>
+    </div>
+    <div class="desni">
+
+		<div class="updatePodatak">
+			<h3>Dodavanje dijela</h3>
+			<label>Šifra dijela:<input type="text" id="sifraD"></label><br />
+			<label>Naziv dijela <input type="text" id="nazivD"></label><br />
+			<label>Proizvođač <input type="text" id="proizvodac"></label><br />
+			<label>Cijena <input type="text" id="cijena"></label><br />
+			<button id="snimi" onclick="dodajDio()">Dodaj</button>
+			<br />
+			<br />
+			<h3>Dodavanje Modela</h3>
+			<label>Naziv dijela <input type="text" id="nazivD"></label><br />
+			<label>Naziv modela <input type="text" id="nazivM"></label><br />
+			<label>Cijena <input type="text" id="cijena"></label><br />
+			<label>Radnja <input type="text" id="radnja"></label><br />
+			<label>Grad <input type="text" id="grad"></label><br />
+			<button id="snimi" onclick="dodajPodatak()">Dodaj</button>
+		</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,358 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        h3 {
+            color: whitesmoke;
+        }
+
+        body {
+            background-color: #a19f9f;
+        }
+
+        button {
+            background-color: #eae9e9;
+            border: 0px;
+        }
+        tr {
+            transition: 1s;
+        }
+
+        .lijevi, .desni {
+            display: inline-block;
+            position: absolute;
+            left: 0px;
+            top: 100px;
+            float: left;
+            height: 100%;
+            width: 50%;
+            margin: 10px;
+            padding: 20px;
+            margin: 0px;
+            border: 0px;
+        }
+
+        .desni {
+            left: 50%;
+
+        }
+        .updatePodatak{
+            margin-left:30%;
+        }
+        .updatePodatak input{
+            margin-left:2%;
+        }
+
+        .traka {
+            height: 65px;
+            border-bottom: 1px solid #e0e0e0;
+            border-top: 1px solid #e0e0e0;
+            background-color: #470000;
+        }
+
+        .main-nav {
+            margin-top: 20px;
+            text-align: center;
+            list-style: none;
+        }
+
+        .main-nav li {
+            border-radius: 12px;
+            height: 30px;
+            letter-spacing: 1.5px;
+            font-size: 150%;
+            display: inline-block;
+        }
+
+        .main-nav li a {
+            border-radius: 12px;
+            text-align: center;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0px 32px;
+        }
+
+        .main-nav li a :hover {
+            color: #7c1010;
+            padding: 5px;
+            background: linear-gradient(to bottom right, #858585, #b4b4b4);
+            box-shadow: 0 0 35px rgba(153, 153, 153, 0.5);
+            transition: all .8s;
+            border-radius: 12px;
+        }
+    </style>
+
+    <script>
+		var niz;
+        ucitaj = () => {
+
+            fetch('api/Dijelovi/sviDijelovi',
+                {
+                    //parametri
+                }
+                )
+                .then(
+                    (podaci) => {
+                        if (podaci.status == 200) {
+                            podaci.json().then((niz) => {
+								console.log(niz)
+								popuniPodatke(niz);
+                            }
+                                );
+                        }
+                        else {
+                            console.log(podaci.status);
+						}
+
+					}
+                )
+				.catch(
+					(greska) => {
+                    console.log(greska);
+					}
+				)
+         }
+
+		popuniPodatke = (podaci) => {
+
+			for (parentObj of podaci) {
+				//dodavanje reda u tabelu
+				let red = document.createElement("tr");
+                red.setAttribute("ID", "red" + parentObj.idDijela)
+				document.getElementById("podaciTabela").appendChild(red);
+
+				//dodavanje celije sa ID
+				let sifraD = document.createElement("td");
+                red.appendChild(sifraD);
+                sifraD.innerHTML = parentObj.sifra;
+				//dodavanje celije
+				let nazivD = document.createElement("td");
+                red.appendChild(nazivD);
+                nazivD.innerHTML = parentObj.naziv;
+				//dodavanje celije
+				let proizvodacD = document.createElement("td");
+                red.appendChild(proizvodacD);
+                proizvodacD.innerHTML = parentObj.proizvodac;
+				//dodavanje celije
+				let Cijena = document.createElement("td");
+                red.appendChild(Cijena);
+                Cijena.innerHTML = parentObj.cijena;
+				//dodavanje dugmadi
+				let akcije = document.createElement("td");
+				red.appendChild(akcije);
+				let updateButton = document.createElement("button");
+                updateButton.setAttribute("onclick", "azuriraj(" + parentObj.idDijela + ")");
+				updateButton.innerHTML = "Azuriraj";
+				akcije.appendChild(updateButton);
+				let obrisiButton = document.createElement("button");
+				obrisiButton.setAttribute("onclick", "obrisi(" + parentObj.idDijela + ")");
+				obrisiButton.innerHTML = "Obrisi";
+				akcije.appendChild(obrisiButton);
+			}
+		}
+
+		obrisi = (id) => {
+
+            let obrisano = "api/Dijelovi/obrisiDio/";
+            obrisano += id;
+            fetch(obrisano,
+				{
+					method: 'DELETE'
+				})
+				.then(
+					(response) => {
+						if (response.status !== 200) {
+							console.log('Geska: ' +
+								response.status);
+							return;
+						}
+						response.text().then((data) => {
+							console.log(data);
+                            let element = document.getElementById("red" + id);
+							element.style.opacity = "0";
+							setTimeout(() => {
+								element.remove();
+							}, 1000);
+						});
+					}
+				)
+				.catch((err) => {
+					console.log('Fetch Greska :-S', err);
+				});
+
+		}
+
+		azuriraj = (id) => {
+
+            let adresa = "api/Dijelovi/pronadjiDio/";
+			adresa += id;
+			fetch(adresa,
+				{
+
+				})
+				.then(
+					(response) => {
+						if (response.status !== 200) {
+							console.log('Geska: ' +
+								response.status);
+							return;
+						}
+						response.json().then((data) => {
+							console.log(data);
+                            with (document) {
+                                getElementById("idD").value = data.idDijela;
+                                getElementById("sifraD").value = data.sifra; 
+								getElementById("nazivD").value = data.naziv;
+								getElementById("proizvodacD").value = data.proizvodac;
+                                getElementById("cijenaD").value = data.cijena;
+							}
+						});
+					}
+				)
+				.catch((err) => {
+					console.log('Fetch Greska :-S', err);
+				});
+
+		}
+
+		noviDio = () => {
+			let podatak = new Object();
+            podatak.idDijela = 0;
+            podatak.sifra = document.getElementById("sifraDijela").value;
+            podatak.naziv = document.getElementById("nazivDijela").value;
+            podatak.proizvodac = document.getElementById("proizvodacDijela").value;
+            podatak.cijena = document.getElementById("cijenaDijela").value + " KM";
+            dodajDio(podatak);
+
+		}
+		dodajDio = (podaci) => {
+            let adresa = 'api/Dijelovi/dodavanjeDijela';
+			var strJson = JSON.stringify(podaci);
+			fetch(adresa, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+					// 'Content-Type': 'application/x-www-form-urlencoded',
+				},
+				body: strJson
+			})
+				.then(
+					(response) => {
+						if (response.status < 200 || response.status > 300) {
+							console.log('Geska: ' +
+								response.status);
+							return;
+						}
+						response.json().then((data) => {
+							console.log(data);
+							document.getElementById("podaciTabela").innerHTML = "";
+							ucitaj();
+                            document.getElementById("sifraDijela").value = "";
+                            document.getElementById("nazivDijela").value = "";
+                            document.getElementById("proizvodacDijela").value = "";
+                            document.getElementById("cijenaDijela").value = "";
+						});
+					}
+				)
+				.catch((err) => {
+					console.log('Fetch Greska :-S', err);
+				});
+		}
+        updateDio = () => {
+            let podatak = new Object();
+            podatak.idDijela = parseInt(document.getElementById("idD").value);
+            podatak.sifra = document.getElementById("sifraD").value;
+            podatak.naziv = document.getElementById("nazivD").value;
+            podatak.proizvodac = document.getElementById("proizvodacD").value;
+            podatak.cijena = document.getElementById("cijenaD").value ;
+            azurirajPodatak(podatak);
+
+
+        }
+        azurirajPodatak = (podaci) => {
+            let adresa = 'api/Dijelovi/azurirajDio';
+            var strJson = JSON.stringify(podaci);
+            fetch(adresa, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: strJson
+            })
+                .then(
+                    (response) => {
+                        if (response.status < 200 || response.status > 300) {
+                            console.log('Geska: ' +
+                                response.status);
+                            return;
+                        }
+                        response.json().then((data) => {
+                            console.log(data);
+                            document.getElementById("podaciTabela").innerHTML = "";
+                            ucitaj();
+                            document.getElementById("idD").value = "";
+                            document.getElementById("sifraD").value = "";
+                            document.getElementById("nazivD").value = "";
+                            document.getElementById("proizvodacD").value = "";
+                            document.getElementById("cijenaD").value = "";
+                        });
+                    }
+                )
+                .catch((err) => {
+                    console.log('Fetch Greska :-S', err);
+                });
+        }
+
+    </script>
+</head>
+<body onload="ucitaj()">
+    <div class="traka">
+        <ul class="main-nav">
+            <li><a href="index.html"><b> Početna stranica </b></a></li>
+            <li><a href="dijelovi.html"><b> Pronađite dijelove </b></a></li>
+            <li><a href="Kontaktirajte.html"><b> Kontaktirajte nas </b></a></li>
+        </ul>
+    </div>
+    <div class="lijevi">
+        <table style="width:80%;table-layout:fixed" border="1px">
+            <thead style="font-size:20px;background-color:#470000;color:lightgray">
+                <tr>
+                    <th>Šifra dijela</th>
+                    <th>Naziv dijela</th>
+                    <th>Proizvođač</th>
+                    <th>Cijena</th>
+                    <th>Opcije</th>
+                </tr>
+            </thead>
+            <tbody id="podaciTabela" style="font-size:18px;text-align:center;background-color:#815e5e">
+            </tbody>
+        </table>
+    </div>
+    <div class="desni">
+
+        <div class="updatePodatak">
+            <h3>Dodavanje dijelova</h3>
+            <label>Šifra dijela <input type="text" id="sifraDijela"></label><br />
+            <label>Naziv dijela <input type="text" id="nazivDijela"></label><br />
+            <label>Proizvođač <input type="text" id="proizvodacDijela"></label><br />
+            <label>Cijena <input type="text" id="cijenaDijela"></label><br />
+            <button id="snimi" onclick="noviDio()">Dodavanje dijela</button>
+            <br />            <br />
+        </div>
+        <hr style="width:75%;" />
+        <div class="updatePodatak">
+            <h3>Ažuriranje dijelova</h3>
+            <label>ID dijela <input type="text" id="idD"></label><br />
+            <label>Šifra dijela <input type="text" id="sifraD"></label><br />
+            <label>Naziv dijela <input type="text" id="nazivD"></label><br />
+            <label>Proizvođač <input type="text" id="proizvodacD"></label><br />
+            <label>Cijena <input type="text" id="cijenaD"></label><br />
+            <button id="snimi2" onclick="updateDio()">Azuriraj dio</button>                   <br />            <br />
+        </div>
+        <hr style="width:75%;" />
+    </div>
+</body>
+</html>

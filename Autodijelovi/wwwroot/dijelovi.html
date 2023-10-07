@@ -1,0 +1,529 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        h2{
+            color:whitesmoke;
+        }
+        body{
+            background-color:#a19f9f;
+        }
+        button{
+            background-color:#eae9e9;
+            border:0px;
+        }
+        .lista{
+            display:inline-table;
+            padding:0px 10px;
+        }
+        .spoljni {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            background-color: lightblue;
+        }
+        .padajuci {
+            font-size: 18px;
+            background-color: #815e5e;
+        }
+        
+        .spoljni > .unutrasnji {
+            background-color: lightcyan;
+            width: 20%;
+            margin: 10px;
+            padding: 10px;
+        }
+        .lijevi, .desni {
+            display: inline-block;
+            position: absolute;
+            left: 0px;
+            top: 100px;
+            float: left;
+            height: 100%;
+            width: 50%;
+            margin: 10px;
+            padding: 20px;
+            margin: 0px;
+            border: 0px;
+        }
+
+        .desni {
+            left: 50%;
+        }
+        .traka {
+            height: 65px;
+            border-bottom: 1px solid #e0e0e0;
+            border-top: 1px solid #e0e0e0;
+            background-color: #470000;
+        }
+
+        .main-nav {
+            margin-top: 20px;
+            text-align: center;
+            list-style: none;
+        }
+
+        .main-nav li {
+            border-radius: 12px;
+            height: 30px;
+            letter-spacing: 1.5px;
+            font-size: 150%;
+            display: inline-block;
+        }
+
+        .main-nav li a {
+            border-radius: 12px;
+            text-align: center;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0px 32px;
+        }
+
+        .main-nav li a :hover {
+            color: #7c1010;
+            padding: 5px;
+            background: linear-gradient(to bottom right, #858585, #b4b4b4);
+            box-shadow: 0 0 35px rgba(153, 153, 153, 0.5);
+            transition: all .8s;
+            border-radius: 12px;
+         }
+    </style>
+    <script>
+        var niz;
+        var brojac = 0;
+
+        ucitaj = () => {
+            grad();
+            model();
+            dio();
+
+            fetch('api/Dijelovi/prikaz',
+                {
+                    //parametri
+                }
+            )
+                .then(
+                    (podaci) => {
+                        if (podaci.status == 200) {
+                            podaci.json().then((niz) => {
+                                console.log(niz)
+                                popuniPodatke(niz);
+                            }
+                            );
+                        }
+                        else {
+                            console.log(podaci.status);
+                        }
+
+                    }
+                )
+                .catch(
+                    (greska) => {
+                        console.log(greska);
+                    }
+                )
+
+        }
+
+        popuniPodatke = (podaci) => {
+
+            for (parentObj of podaci) {
+                //dodavanje reda u tabelu
+                let red = document.createElement("tr");
+                red.setAttribute("ID", "red" + parentObj.id_veze);
+                document.getElementById("podaciTabela").appendChild(red);
+
+                //dodavanje celije sa nazivom dijela
+                let nazivD = document.createElement("td");
+                nazivD.setAttribute("ID", 1 + "kolona" + parentObj.id_veze);
+                red.appendChild(nazivD);
+                nazivD.innerHTML = parentObj.naziv_Dijela;
+                //dodavanje celije
+                let nazivM = document.createElement("td");
+                nazivM.setAttribute("ID", 2 + "kolona" + parentObj.id_veze);
+                red.appendChild(nazivM);
+                nazivM.innerHTML = parentObj.naziv_Modela;
+                //dodavanje celije
+                let cijena = document.createElement("td");
+                cijena.setAttribute("ID", 3 + "kolona" + parentObj.id_veze);
+                red.appendChild(cijena);
+                cijena.innerHTML = parentObj.cijena;
+                //dodavanje celije
+                let radnja = document.createElement("td");
+                radnja.setAttribute("ID", 4 + "kolona" + parentObj.id_veze);
+                red.appendChild(radnja);
+                radnja.innerHTML = parentObj.radnja;
+
+                let grad = document.createElement("td");
+                grad.setAttribute("ID", 5 + "kolona" + parentObj.id_veze);
+                red.appendChild(grad);
+                grad.innerHTML = parentObj.grad;
+
+                let akcije = document.createElement("td");
+                red.appendChild(akcije);
+                let updateButton = document.createElement("button");
+                updateButton.setAttribute("onclick", "dodaj(" + parentObj.id_veze + ")");
+                updateButton.innerHTML = "Dodaj";
+                akcije.appendChild(updateButton);
+                
+            }
+        }
+        dodaj = (id) => {
+            let red = document.createElement("tr");
+            red.setAttribute("ID", "redK" + id);
+            document.getElementById("podaciKorpa").appendChild(red);
+
+            //dodavanje celije sa nazivom dijela
+            let nazivD = document.createElement("td");
+            red.appendChild(nazivD);
+            nazivD.innerHTML = document.getElementById("1kolona" + id).innerText;
+            //dodavanje celije
+            let nazivM = document.createElement("td");
+            red.appendChild(nazivM);
+            nazivM.innerHTML = document.getElementById("2kolona" + id).innerText;
+            //dodavanje celije
+            let cijena = document.createElement("td");
+            red.appendChild(cijena);
+            cijena.innerHTML = document.getElementById("3kolona" + id).innerText;
+            //dodavanje celije
+            let radnja = document.createElement("td");
+            red.appendChild(radnja);
+            radnja.innerHTML = document.getElementById("4kolona" + id).innerText;
+
+            let grad = document.createElement("td");
+            red.appendChild(grad);
+            grad.innerHTML = document.getElementById("5kolona" + id).innerText;
+
+
+        }
+
+        zakljuciKorpu = () => {
+            if (document.getElementById("podaciKorpa").innerText == "") {
+                alert("Nemate nijednu stvar u korpi.");
+            } else if (document.getElementById("podaciKorpa").innerText != ""){
+                unosKupca();
+            }
+        }
+
+        unosKupca = () => {
+            var div = document.getElementById("kupac");
+            div.style.display = "block";
+        }
+
+        zavrsiKorpu = () => {
+            var kupac = new Object();
+            kupac.ime = document.getElementById("imeK").value;
+            kupac.prezime = document.getElementById("prezimeK").value;
+            kupac.adresa = document.getElementById("adresaK").value;
+            kupac.grad = document.getElementById("gradK").value;
+            kupac.kontakt = document.getElementById("kontaktK").value;
+            kupac.brojKartice = document.getElementById("brkartK").value;
+            dodajKupca(kupac);
+        }
+        dodajKupca = (podaci) => {
+            let adresa = 'api/Kupac/dodavanjeKupca';
+            var strJson = JSON.stringify(podaci);
+            fetch(adresa, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: strJson
+            })
+                .then(
+                    (response) => {
+                        if (response.status < 200 || response.status > 300) {
+                            console.log('Geska: ' +
+                                response.status);
+                            return;
+                        }
+                        response.json().then((data) => {
+                            console.log(data);
+                            document.getElementById("imeK").value = "";
+                            document.getElementById("prezimeK").value = "";
+                            document.getElementById("adresaK").value = "";
+                            document.getElementById("gradK").value = "";
+                            document.getElementById("kontaktK").value = "";
+                            document.getElementById("brkartK").value = "";
+                            document.getElementById("podaciKorpa").innerHTML = "";
+                            var div = document.getElementById("kupac");
+                            div.style.display = "none";
+                            alert("Uspješno ste naručili.");
+                        });
+                    }
+                )
+                .catch((err) => {
+                    console.log('Fetch Greska :-S', err);
+                });
+        }
+        grad = () => {
+
+            fetch('api/Radnje/sviGradovi',
+                {
+                    //parametri
+                }
+            )
+                .then(
+                    (podaci) => {
+                        if (podaci.status == 200) {
+                            podaci.json().then((niz) => {
+                                console.log(niz)
+                                for (parentObj of niz) {
+                                    let stavka = document.createElement("option");
+                                    stavka.setAttribute("value", parentObj.grad);
+                                    stavka.text = parentObj.grad;
+                                    document.getElementById("grad").appendChild(stavka);
+                                }
+                            }
+                            );
+                        }
+                        else {
+                            console.log(podaci.status);
+                        }
+
+                    }
+                )
+                .catch(
+                    (greska) => {
+                        console.log(greska);
+                    }
+                )
+
+        }
+        model = () => {
+
+            fetch('api/Modeli/sviModeli',
+                {
+                    //parametri
+                }
+            )
+                .then(
+                    (podaci) => {
+                        if (podaci.status == 200) {
+                            podaci.json().then((niz) => {
+                                console.log(niz)
+                                for (parentObj of niz) {
+                                    let stavka = document.createElement("option");
+                                    stavka.setAttribute("value", parentObj.nazivModela);
+                                    stavka.text = parentObj.nazivModela;
+                                    document.getElementById("model").appendChild(stavka);
+                                }
+                            }
+                            );
+                        }
+                        else {
+                            console.log(podaci.status);
+                        }
+                    }
+                )
+                .catch(
+                    (greska) => {
+                        console.log(greska);
+                    }
+                )
+        }
+
+        dio = () => {
+
+            fetch('api/Dijelovi/sviDijelovi',
+                {
+                    //parametri
+                }
+            )
+                .then(
+                    (podaci) => {
+                        if (podaci.status == 200) {
+                            podaci.json().then((niz) => {
+                                console.log(niz)
+                                for (parentObj of niz) {
+                                    let stavka = document.createElement("option");
+                                    stavka.setAttribute("value", parentObj.naziv);
+                                    stavka.text = parentObj.naziv;
+                                    document.getElementById("dio").appendChild(stavka);
+                                }
+                            }
+                            );
+                        }
+                        else {
+                            console.log(podaci.status);
+                        }
+
+                    }
+                )
+                .catch(
+                    (greska) => {
+                        console.log(greska);
+                    }
+                )
+
+        }
+
+        Trazi = () => {
+            let trazeni = new Object();
+            trazeni.grad = document.getElementById("grad").value;
+            trazeni.model = document.getElementById("model").value;
+            trazeni.dio = document.getElementById("dio").value;
+            if (trazeni.grad == "nothing") { trazeni.grad = "0"; }
+            if (trazeni.model == "nothing") { trazeni.model = "0"; }
+            if (trazeni.dio == "nothing") { trazeni.dio = "0"; }
+            traziDijelove(trazeni);
+            document.getElementById("podaciTabela").innerHTML = "";
+        }
+
+        traziDijelove = (trazeni) => {
+            let adresa = 'api/ModRad/traziDijelove';
+            var strJson = JSON.stringify(trazeni);
+            fetch(adresa, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: strJson
+            })
+                .then(
+                    (podaci) => {
+                        if (podaci.status == 200) {
+                            podaci.json().then((niz) => {
+                                console.log(niz)
+                                for (parentObj of niz) {
+                                    let red = document.createElement("tr");
+                                    red.setAttribute("ID", "red" + parentObj.id_veze);
+                                    document.getElementById("podaciTabela").appendChild(red);
+
+                                    //dodavanje celije sa nazivom dijela
+                                    let nazivD = document.createElement("td");
+                                    nazivD.setAttribute("ID", 1 + "kolona" + parentObj.id_veze);
+                                    red.appendChild(nazivD);
+                                    nazivD.innerHTML = parentObj.naziv_Dijela;
+                                    //dodavanje celije
+                                    let nazivM = document.createElement("td");
+                                    nazivM.setAttribute("ID", 2 + "kolona" + parentObj.id_veze);
+                                    red.appendChild(nazivM);
+                                    nazivM.innerHTML = parentObj.naziv_Modela;
+                                    //dodavanje celije
+                                    let cijena = document.createElement("td");
+                                    cijena.setAttribute("ID", 3 + "kolona" + parentObj.id_veze);
+                                    red.appendChild(cijena);
+                                    cijena.innerHTML = parentObj.cijena;
+                                    //dodavanje celije
+                                    let radnja = document.createElement("td");
+                                    radnja.setAttribute("ID", 4 + "kolona" + parentObj.id_veze);
+                                    red.appendChild(radnja);
+                                    radnja.innerHTML = parentObj.radnja;
+
+                                    let grad = document.createElement("td");
+                                    grad.setAttribute("ID", 5 + "kolona" + parentObj.id_veze);
+                                    red.appendChild(grad);
+                                    grad.innerHTML = parentObj.grad;
+
+                                    let akcije = document.createElement("td");
+                                    red.appendChild(akcije);
+                                    let updateButton = document.createElement("button");
+                                    updateButton.setAttribute("onclick", "dodaj(" + parentObj.id_veze + ")");
+                                    updateButton.innerHTML = "Dodaj";
+                                    akcije.appendChild(updateButton);
+                                }
+                            }
+                            );
+                        }
+                        else {
+                            console.log(podaci.status);
+                        }
+
+                    }
+                )
+                .catch(
+                    (greska) => {
+                        console.log(greska);
+                    }
+                )
+        }
+    </script>
+
+</head>
+<body onload="ucitaj()">
+    <div class="traka">
+        <ul class="main-nav">
+            <li><a href="index.html"><b> Početna stranica </b></a></li>
+            <li><a href="Kontaktirajte.html"><b> Kontaktirajte nas </b></a></li>
+            <li><a href="zaZaposlene.html"><b> Kutak za zaposlene </b></a></li>
+        </ul>
+    </div>
+    <div class="lijevi">
+        <h2>Dostupni dijelovi &#128203</h2>
+        <table style="width:80%;table-layout:fixed" border="1px" id="tabela">
+            <thead style="font-size:20px;background-color:#470000;color:lightgray">
+                <tr>
+                    <th>Naziv dijela</th>
+                    <th>Model</th>
+                    <th>Cijena</th>
+                    <th>Radnja</th>
+                    <th>Grad</th>
+                    <th>Dodaj u korpu</th>
+                </tr>
+            </thead>
+            <tbody id="podaciTabela" style="font-size:18px;text-align:center;background-color:#815e5e">
+            </tbody>
+        </table>
+    </div>
+    <div class="desni">
+        <h2>Pretraga dijelova &#128270</h2>
+        <div class="lista">
+            <form >
+                <select name="odabirGrada" id="grad" class="padajuci">
+                    <option value="nothing">Odaberite grad</option>
+                </select>
+            </form>
+        </div>
+        <div class="lista">
+            <form >
+                <select name="odabirModela" id="model" class="padajuci">
+                    <option value="nothing">Odaberite model</option>
+                </select>
+            </form>
+        </div>
+        <div class="lista">
+            <form>
+                <select name="odabirDijela" id="dio" class="padajuci">
+                    <option value="nothing">Odaberite dio</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="lista">
+            <button onclick="Trazi()" style="font-size:18px">Provjera</button>
+        </div>
+        <div id="korpa">
+            <h2>Moja korpa &#128722</h2>
+            <table style="width:80%;table-layout:fixed" border="1px" id="tabela">
+                <thead style="font-size:20px;background-color:#470000;color:lightgray">
+                    <tr>
+                        <th>Naziv dijela</th>
+                        <th>Model</th>
+                        <th>Cijena</th>
+                        <th>Radnja</th>
+                        <th>Grad</th>
+                    </tr>
+                </thead>
+                <tbody id="podaciKorpa" style="font-size:18px;text-align:center;background-color:#815e5e">
+                </tbody>
+            </table>
+            <button id="zakljuci" onclick="zakljuciKorpu()">Zaključi narudžbu</button><br /><br />
+            <div id="kupac" style="display:none">
+                <label>Ime: </label><input type="text" id="imeK" /><br />
+                <label>Prezime: </label><input type="text" id="prezimeK" /><br />
+                <label>Adresa: </label><input type="text" id="adresaK" /><br />
+                <label>Grad: </label><input type="text" id="gradK" /><br />
+                <label>Kontakt: </label><input type="text" id="kontaktK" placeholder="+387......." /><br />
+                <label>Broj kartice: </label><input type="text" id="brkartK" placeholder="1111222233334444"/><br />
+                <button onclick="zavrsiKorpu()">Završi narudžbu</button>
+            </div>
+            
+        </div>
+        </div>
+</body>
+</html>
